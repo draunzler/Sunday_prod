@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pymongo
+python-dotenv
+openai
+langchain
+langchain-google-genai
+google-denerativeai
+bcrypt
