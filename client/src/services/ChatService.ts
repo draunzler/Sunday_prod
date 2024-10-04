@@ -3,7 +3,7 @@ import { IUser } from '../interfaces/IUser';
 import { IChat } from '../interfaces/IChat';
 import { messageResponse } from '../interfaces/messageResponse';
 
-const LOCALHOST_URL = import.meta.env.VITE_LOCALHOST_URL;
+const LOCALHOST_URL = import.meta.env.VITE_DEPLOYED_URL;
 
 export const fetchChats = async (userId: string): Promise<IUser> => {
   const response = await axios.get(`${LOCALHOST_URL}/api/users/get/${userId}`);
