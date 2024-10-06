@@ -18,6 +18,7 @@
     height: 3rem;
     width: auto;
     margin-bottom: 1rem;
+    transition: transform 0.3s ease;
 }
 .authForm{
     background: #141414;
@@ -49,5 +50,17 @@
                 opacity: 0.75;
             }
         }
+    }
+}
+.rotate {
+    animation: rotate 1s linear infinite; /* Infinite rotation */
+}
+  
+@keyframes rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
 }
