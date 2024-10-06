@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import chatStore from '../stores/ChatStore';
 import { useNavigate } from 'react-router-dom';
+import styles from "../styles/createChat.module.scss";
 
 interface CreateChatProps {
     isOpen: boolean;
@@ -31,7 +32,7 @@ const CreateChat: React.FC<CreateChatProps> = observer(({ isOpen, onClose }) => 
     if (!isOpen) return null;
 
     return(
-        <div>
+        <div className={styles.createChat}>
             <h1>Create new chat</h1>
             <form onSubmit={handleCreate}>
                 <input

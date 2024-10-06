@@ -1,4 +1,3 @@
-// Modal.tsx
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -11,10 +10,15 @@ interface ModalProps {
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
+  const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.currentTarget === event.target) {
+      onClose();
+    }
+  };
+
   return ReactDOM.createPortal(
-    <div style={styles.overlay}>
+    <div style={styles.overlay} onClick={handleOverlayClick}>
       <div style={styles.modal}>
-        <button style={styles.closeButton} onClick={onClose}>X</button>
         {children}
       </div>
     </div>,
@@ -29,22 +33,18 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
+    backdropFilter:"blur(2.5px)",
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modal: {
-    backgroundColor: 'grey',
+    backgroundColor: '#1d1d1d',
     padding: '20px',
     borderRadius: '8px',
     maxWidth: '500px',
     width: '100%',
-  },
-  closeButton: {
-    position: 'absolute' as 'absolute',
-    top: '10px',
-    right: '10px',
   },
 };
 

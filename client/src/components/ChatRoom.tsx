@@ -4,6 +4,7 @@ import chatStore from '../stores/ChatStore';
 import { observer } from 'mobx-react-lite';
 import { IChat } from '../interfaces/IChat';
 import ReactMarkdown from 'react-markdown';
+import styles from "../styles/chatRoom.module.scss";
 
 const ChatRoom: React.FC = observer(() => {
   const { id } = useParams<{ id: string }>();
@@ -52,29 +53,44 @@ const ChatRoom: React.FC = observer(() => {
   };
 
   return (
-    <div style={{height: "calc(100vh - 40px)", display: "flex", flexDirection: "column", alignItems: "center"}}>
+    <div className={styles.chatRoomContainer}>
       <h1>{chatMessages?.name}</h1>
-      <div style={{flex: 1, overflowY: "auto", width: "100%"}}>
+      <div className={styles.chat}>
         {chatMessages?.messages.map((msg, index) => (
           <div key={index} style={{width: "50rem", margin: "auto", display: "flex", flexDirection: "column", gap: "1rem"}}>
-            <div style={{alignSelf: "flex-end", background: "#313131", padding: "1rem", borderRadius: "25px"}}> {msg.prompt} </div>
-            <div> <ReactMarkdown>{msg.response}</ReactMarkdown> </div>
+            <div className={styles.prompt}> {msg.prompt} </div>
+            <div className={styles.response}> <ReactMarkdown>{msg.response}</ReactMarkdown> </div>
             <em>
-              {msg.timestamp}
+              {
+                (() => {
+                  const chatDate = new Date(msg.timestamp);
+                  chatDate.setTime(chatDate.getTime() - chatDate.getTimezoneOffset() * 60 * 1000);
+                  return chatDate.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  });
+                })()
+              }
             </em>
           </div>
         ))}
       </div>
-      <div style={{width: "50rem", margin: "auto", display: "flex"}}>
+      <form onSubmit={handleSendPrompt} style={{width: "50rem", margin: "auto", display: "flex"}}>
         <input
-        style={{flex: 1}}
+          style={{flex: 1}}
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Ask Sunday"
         />
-        <button onClick={handleSendPrompt}>Send</button>
-      </div>
+        <button type='submit'>
+          <img src="/send.svg" alt="" />
+        </button>
+      </form>
     </div>
   );
 });

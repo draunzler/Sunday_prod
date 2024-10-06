@@ -1,0 +1,54 @@
+.dashboardContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    header{
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        width: 100%;
+        .dropdown{
+            position: absolute;
+            right: 0;
+            top: 100%;
+            border-radius: 10px;
+            background-color: #1d1d1d;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            z-index: 1;
+        }
+    }
+    button{
+        display: block;
+        margin: auto;
+        background: transparent;
+        border: 1px solid #d9d9d950;
+        color: #d9d9d9;
+        &:hover{
+            border: 1px solid #58D033;
+        }
+    }
+    table{
+        padding: 2rem;
+        width: 100%;
+        .firstCol{
+            width: 15rem;
+        }
+        button{
+            border: 1px solid transparent;
+            width: 25%;
+        }
+        td{
+            padding: 0.5rem;
+        }
+        td{
+            border-bottom: 1px solid #d9d9d920;
+        }
+    }
+    .createBtn{
+        height: 15rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
