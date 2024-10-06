@@ -41,16 +41,16 @@ google_llm = GoogleGenerativeAI(api_key=genai_api_key, model="gemini-1.5-pro")
 prompt = PromptTemplate(
     input_variables=["history", "input"],
     template=(
-        "You are an AI assistant named Sunday. You are designed to be helpful, "
-        "creative, clever. Your purpose is to assist users by providing "
-        "informative, engaging, and thoughtful responses to their questions and requests.\n\n"
+        "You are an AI assistant named Sunday, designed to be helpful, creative, and clever. "
+        "Your purpose is to assist users by providing informative, engaging, and thoughtful responses "
+        "to their questions and requests.\n\n"
         "When responding, always keep the following guidelines in mind:\n"
         "1. Clarity: Provide clear and concise information.\n"
         "2. Creativity: Offer innovative suggestions and solutions.\n"
-        "Below is the conversation history. Use it to understand the context and flow of the conversation.\n\n"
+        "Use the conversation history below to understand the context and flow of the conversation.\n\n"
         "{history}\n\n"
-        "Human: {input}\n"
-        "AI:\n\n"
+        "User: {input}\n"
+        "Your response:"
     )
 )
 
@@ -76,24 +76,28 @@ async def generate_response(prompt_request, messages_collection):
         logger.debug(f"Received prompt: {prompt}")
         logger.debug(f"User ID: {user_id}, Message ID: {message_id}")
 
-        # Retrieve memory context from MongoDB or in-memory context
-        if message_id in llm_memory_contexts:
+        # Initialize a new empty memory context if there's no message ID (new chat)
+        if not message_id:  # If message_id is None or empty, treat it as a new chat
+            memory_context = []  # Start with empty memory for new chats
+        elif message_id in llm_memory_contexts:
             memory_context = llm_memory_contexts[message_id]
         else:
+            # Fetch memory from the database for existing chats
             message_doc = messages_collection.find_one({"_id": ObjectId(message_id)})
             if not message_doc or "messages" not in message_doc:
                 memory_context = []
             else:
                 memory_context = message_doc["messages"]
 
+        # Build conversation history from memory context
         history = "\n".join([f"User: {m['prompt']}\nBot: {m['response']}" for m in memory_context])
-        full_input = f"{history}\nUser: {prompt}" 
+        full_input = f"{history}\nUser: {prompt}"
 
+        # Generate the response using the LLM
         response = llm_chain.predict(input=full_input)
-
         logger.info(f"Generated response: {response}")
 
-        # Update memory context with the new interaction
+        # Update the memory context with the new interaction
         new_interaction = {
             "prompt": prompt,
             "response": response,
@@ -101,23 +105,28 @@ async def generate_response(prompt_request, messages_collection):
         }
         memory_context.append(new_interaction)
 
-        update_data = {
-            "$push": {
-                "messages": new_interaction
+        # Push the new interaction to the database
+        if message_id:
+            update_data = {
+                "$push": {
+                    "messages": new_interaction
+                }
             }
-        }
-        result = messages_collection.update_one(
-            {"_id": ObjectId(message_id), "user_id": user_id},
-            update_data
-        )
+            result = messages_collection.update_one(
+                {"_id": ObjectId(message_id), "user_id": user_id},
+                update_data
+            )
 
-        logger.debug(f"Update result: {result.modified_count} documents modified")
+            logger.debug(f"Update result: {result.modified_count} documents modified")
 
-        if result.modified_count == 0:
-            return JSONResponse({"error": "Message not found or not updated"}, status_code=404)
+            if result.modified_count == 0:
+                return JSONResponse({"error": "Message not found or not updated"}, status_code=404)
+
+        # Optionally store in in-memory contexts as well
+        llm_memory_contexts[message_id] = memory_context
 
         return {"bot": response}
-    
+
     except Exception as e:
         logger.error(f"Error generating response: {e}")
         raise HTTPException(status_code=500, detail="Something went wrong")
