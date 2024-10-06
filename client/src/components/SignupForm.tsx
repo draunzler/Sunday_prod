@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import userStore from '../stores/UserStore';
 import { Link, useNavigate } from 'react-router-dom';
+import styles from "../styles/authForm.module.scss"
 
 const SignupForm: React.FC = observer(() => {
   const navigate = useNavigate();
@@ -25,39 +26,45 @@ const SignupForm: React.FC = observer(() => {
   };
 
   return (
-    <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-    <h1>Welcome Aboard!</h1>
-    <form style={{display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"}} onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <input
-          type={showPassword ? 'text' : 'password'}
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          style={{ marginLeft: '5px' }}
-        >
-          {showPassword ? 'Hide' : 'Show'}
-        </button>
+    <div className={styles.authPage}>
+      <div className={styles.authContainer}>
+        <img className={styles.img} src="/sunday_dark.svg" alt="" />
+        <h1>Welcome Aboard!</h1>
+        <form className={styles.authForm} onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <div className={styles.authPassword}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ marginLeft: '5px' }}
+            >
+              {showPassword ? 
+                <img src="/hide.svg" alt="" /> : 
+                <img src="/show.svg" alt="" />
+              }
+            </button>
+          </div>
+          <button type="submit">Create Account</button>
+        </form>
+        <div>Already have an account? <Link to={'/login'}>Login</Link></div>
       </div>
-      <button type="submit">Create Account</button>
-    </form>
-    <div>Already have an account? <Link to={'/login'}>Login</Link></div>
     </div>
   );
 });
