@@ -7,6 +7,8 @@
         justify-content: space-between;
         padding: 1rem;
         width: 100%;
+        position: sticky;
+        top: 0;
         .dropdown{
             position: absolute;
             right: 0;
