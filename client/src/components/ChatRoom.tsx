@@ -55,9 +55,9 @@ const ChatRoom: React.FC = observer(() => {
   return (
     <div className={styles.chatRoomContainer}>
       <h1>{chatMessages?.name}</h1>
-      <div className={styles.chat}>
+      <div className={styles.chatContainer}>
         {chatMessages?.messages.map((msg, index) => (
-          <div key={index} style={{maxWidth: "50rem", margin: "auto", display: "flex", flexDirection: "column", gap: "1rem"}}>
+          <div key={index} className={styles.chat}>
             <div className={styles.prompt}> {msg.prompt} </div>
             <div className={styles.response}> <ReactMarkdown>{msg.response}</ReactMarkdown> </div>
             <em>
@@ -79,7 +79,7 @@ const ChatRoom: React.FC = observer(() => {
           </div>
         ))}
       </div>
-      <form onSubmit={handleSendPrompt} style={{maxWidth: "50rem", margin: "auto", display: "flex"}}>
+      <form onSubmit={handleSendPrompt} className={styles.formContainer}>
         <input
           style={{flex: 1}}
           type="text"
