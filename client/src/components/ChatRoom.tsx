@@ -21,7 +21,9 @@ const ChatRoom: React.FC = observer(() => {
     fetchChatMessages();
   }, [id]);
 
-  const handleSendPrompt = async () => {
+  const handleSendPrompt = async (event: React.FormEvent) => {
+    event.preventDefault();
+
     const userId = sessionStorage.getItem('user_id')!;
     const messageId = id!;
 
