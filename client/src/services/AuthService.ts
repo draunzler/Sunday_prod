@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { IUser } from '../interfaces/IUser';
 
-const LOCALHOST_URL = import.meta.env.VITE_LOCALHOST_URL;
+const LOCALHOST_URL = import.meta.env.VITE_DEPLOYED_URL;
 
 export const login = async (email: string, password: string) => {
   const response = await axios.post(`${LOCALHOST_URL}/api/users/login`, { email: email, password: password });
