@@ -22,10 +22,9 @@ const ChatDashboard: React.FC = observer(() => {
   }, []);
 
   useEffect(() => {
-    // Click event listener to detect clicks outside of the dropdown
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false); // Close the dropdown if clicked outside
+        setShowDropdown(false);
       }
     };
 
@@ -35,7 +34,6 @@ const ChatDashboard: React.FC = observer(() => {
       document.removeEventListener('mousedown', handleClickOutside);
     }
 
-    // Cleanup the event listener on component unmount
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -48,7 +46,7 @@ const ChatDashboard: React.FC = observer(() => {
   const handleContinue = async (chatId: string) => {
     if (userId) {
       try {
-        await chatStore.fetchChat(chatId, userId);
+        await chatStore.fetchChat(chatId, userId, 1, 10);
         navigate(`/chat/${chatId}`);
       } catch (error) {
         console.error("Failed to continue to chat", error);
@@ -100,7 +98,9 @@ const ChatDashboard: React.FC = observer(() => {
       </div>
       </header>
       <div className={styles.createBtn}>
-        <button onClick={() => setIsModalOpen(true)}>Create New Chat</button>
+        <div className={styles.createBtnContainer}>
+          <button onClick={() => setIsModalOpen(true)}>Create New Chat</button>
+        </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <CreateChat isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

@@ -3,6 +3,9 @@ export interface IChat {
     user_id: string;
     name: string;
     messages: Message[];
+    total_messages: number;
+    page: number;
+    limit: number;
 }
 
 export interface Message{

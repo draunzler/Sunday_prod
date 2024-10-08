@@ -3,20 +3,22 @@ import { IUser } from '../interfaces/IUser';
 import { IChat } from '../interfaces/IChat';
 import { messageResponse } from '../interfaces/messageResponse';
 
-const LOCALHOST_URL = import.meta.env.VITE_DEPLOYED_URL;
+const LOCALHOST_URL = import.meta.env.VITE_LOCALHOST_URL;
 
 export const fetchChats = async (userId: string): Promise<IUser> => {
   const response = await axios.get(`${LOCALHOST_URL}/api/users/get/${userId}`);
   return response.data;
 };
 
-export const fetchChatById = async (userId: string, chatId: string): Promise<IChat> => {
-  const response = await axios.get(`${LOCALHOST_URL}/api/messages/get`, {
-    params: {
-      user_id: userId,
-      message_id: chatId,
-    },
-  });
+export const fetchChatById = async (userId: string, chatId: string, page: number, limit: number): Promise<IChat> => {
+  const requestBody = {
+    user_id: userId,
+    message_id: chatId,
+    page: page,
+    limit: limit
+  };
+  console.log("request body => ", requestBody)
+  const response = await axios.post(`${LOCALHOST_URL}/api/messages/get`, requestBody);
   return response.data;
 };
 

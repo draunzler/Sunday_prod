@@ -24,9 +24,9 @@ class ChatStore {
     }
   }
 
-  async fetchChat(chatId: string, userId: string) {
+  async fetchChat(chatId: string, userId: string, page: number, limit: number) {
     try {
-      const chatData = await fetchChatById(userId, chatId);
+      const chatData = await fetchChatById(userId, chatId, page, limit);
       this.selectedChat = chatData;
       return chatData;
     } catch (error) {
