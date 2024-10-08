@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import styles from "../styles/chatRoom.module.scss";
+import Sidebar from './Sidebar';
 
 const customStyle = {
   ...materialDark,
@@ -29,26 +30,26 @@ const ChatRoom: React.FC = observer(() => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const maxRows = 10;
   const rowHeight = 24;
-  const limit = 10; // Number of messages to load per API call
+  const limit = 10;
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Scroll to bottom when the user lands on the page
   useEffect(() => {
     const fetchChatMessages = async () => {
       setIsLoading(true);
       const chat = await chatStore.fetchChat(id!, sessionStorage.getItem('user_id')!, page, limit);
       setChatMessages(chat);
       setIsLoading(false);
-
-      // Scroll to the bottom of the chat container when the page loads
-      if (chatContainerRef.current) {
-        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-      }
     };
-
+    setIsSidebarCollapsed(true);
     fetchChatMessages();
   }, [id]);
 
-  // Infinite scroll: Fetch more messages when the user scrolls to the top
+  useEffect(() => {
+    if (chatMessages && chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
   const handleScroll = async () => {
     if (chatContainerRef.current && chatContainerRef.current.scrollTop === 0 && !isLoading) {
       setIsLoading(true);
@@ -147,58 +148,62 @@ const ChatRoom: React.FC = observer(() => {
   };
 
   return (
-    <div className={styles.chatRoomContainer}>
-      <h1>{chatMessages?.name}</h1>
-      <div 
-        className={styles.chatContainer} 
-        ref={chatContainerRef}
-        onScroll={handleScroll}
-      >
-        {chatMessages?.messages.map((msg, index) => (
-          <div key={index} className={styles.chat}>
-            <div className={styles.prompt}> {msg.prompt} </div>
-            <div className={styles.response}> 
-              <ReactMarkdown 
-                components={{
-                  code: CodeBlock,
-                }} 
-              >
-                {msg.response}
-              </ReactMarkdown>
+    <div style={{display: "grid", gridTemplateColumns: "2fr 10fr"}}>
+      <Sidebar isCollapsed={isSidebarCollapsed} />
+      <div className={styles.chatRoomContainer}>
+        <h1>{chatMessages?.name}</h1>
+        <div 
+          className={styles.chatContainer} 
+          ref={chatContainerRef}
+          onScroll={handleScroll}
+        >
+          {chatMessages?.messages.map((msg, index) => (
+            <div key={index} className={styles.chat}>
+              <div className={styles.prompt}> {msg.prompt} </div>
+              <div className={styles.response}> 
+                <ReactMarkdown 
+                  components={{
+                    code: CodeBlock,
+                  }} 
+                >
+                  {msg.response}
+                </ReactMarkdown>
+              </div>
+              <em>
+                {
+                  (() => {
+                    const chatDate = new Date(msg.timestamp);
+                    chatDate.setTime(chatDate.getTime() - chatDate.getTimezoneOffset() * 60 * 1000);
+                    return chatDate.toLocaleString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    });
+                  })()
+                }
+              </em>
             </div>
-            <em>
-              {
-                (() => {
-                  const chatDate = new Date(msg.timestamp);
-                  chatDate.setTime(chatDate.getTime() - chatDate.getTimezoneOffset() * 60 * 1000);
-                  return chatDate.toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false,
-                  });
-                })()
-              }
-            </em>
-          </div>
-        ))}
+          ))}
+        </div>
+        <form onSubmit={handleSendPrompt} className={styles.formContainer}>
+          <textarea
+            ref={textareaRef}
+            style={{ flex: 1 }}
+            placeholder="Ask Sunday"
+            rows={1}
+            onKeyDown={handleKeyDown}
+            onInput={handleTextareaResize}
+          />
+          <button type='submit'>
+            <img src="/send.svg" alt="" />
+          </button>
+        </form>
       </div>
-      <form onSubmit={handleSendPrompt} className={styles.formContainer}>
-        <textarea
-          ref={textareaRef}
-          style={{ flex: 1 }}
-          placeholder="Ask Sunday"
-          rows={1}
-          onKeyDown={handleKeyDown}
-          onInput={handleTextareaResize}
-        />
-        <button type='submit'>
-          <img src="/send.svg" alt="" />
-        </button>
-      </form>
     </div>
+    
   );
 });
 

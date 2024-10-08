@@ -40,6 +40,8 @@
                 border-radius: 25px;
                 max-width: 70%;
                 line-height: 1.5rem;
+                word-break: break-word;
+                text-wrap: wrap;
             }
             .response{
                 line-height: 1.75rem;
@@ -141,6 +143,13 @@
             padding: 0.75rem;
             max-height: 30em;
             border-radius: 4px;
+            overflow-y: auto;
+        }
+        button{
+            display: block;
+            align-self: flex-end;
+            height: 44px;
+            width: 44px;
         }
     }
 }
