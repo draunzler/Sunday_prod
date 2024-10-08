@@ -64,52 +64,51 @@ llm_chain = LLMChain(
 
 logger.info("chat_service.py is being executed")
 
-
-llm_memory_contexts = {}
-
 async def generate_response(prompt_request, messages_collection):
     try:
         prompt = prompt_request.prompt
         user_id = prompt_request.user_id
         message_id = prompt_request.message_id
+        page = prompt_request.page if 'page' in prompt_request else 1
+        limit = 10  # Always limit to the latest 10 messages
 
         logger.debug(f"Received prompt: {prompt}")
-        logger.debug(f"User ID: {user_id}, Message ID: {message_id}")
+        logger.debug(f"User ID: {user_id}, Message ID: {message_id}, Page: {page}, Limit: {limit}")
 
-        # Initialize a new empty memory context if there's no message ID (new chat)
-        if not message_id:  # If message_id is None or empty, treat it as a new chat
-            memory_context = []  # Start with empty memory for new chats
-        elif message_id in llm_memory_contexts:
-            memory_context = llm_memory_contexts[message_id]
+        if not message_id:
+            memory_context = []
         else:
-            # Fetch memory from the database for existing chats
             message_doc = messages_collection.find_one({"_id": ObjectId(message_id)})
             if not message_doc or "messages" not in message_doc:
                 memory_context = []
             else:
-                memory_context = message_doc["messages"]
+                total_messages = len(message_doc["messages"])
+                # Fetch only the latest 10 messages, if there are more than 10
+                memory_context = message_doc["messages"][-limit:]
 
-        # Build conversation history from memory context
+        # Prepare the history with the latest 10 messages in chronological order
         history = "\n".join([f"User: {m['prompt']}\nBot: {m['response']}" for m in memory_context])
         full_input = f"{history}\nUser: {prompt}"
 
-        # Generate the response using the LLM
+        # Generate the response using the model
         response = llm_chain.predict(input=full_input)
         logger.info(f"Generated response: {response}")
 
-        # Update the memory context with the new interaction
+        # Add the new interaction to the context
         new_interaction = {
             "prompt": prompt,
             "response": response,
-            "timestamp": datetime.utcnow().isoformat()  # Convert datetime to string
+            "timestamp": datetime.utcnow().isoformat()
         }
-        memory_context.append(new_interaction)
 
-        # Push the new interaction to the database
+        # Append the new interaction and truncate to keep the latest 10 messages
+        memory_context.append(new_interaction)
+        memory_context = memory_context[-limit:]  # Keep only the latest 10 messages
+
         if message_id:
             update_data = {
-                "$push": {
-                    "messages": new_interaction
+                "$set": {
+                    "messages": memory_context  # Overwrite with the truncated messages
                 }
             }
             result = messages_collection.update_one(
@@ -122,10 +121,12 @@ async def generate_response(prompt_request, messages_collection):
             if result.modified_count == 0:
                 return JSONResponse({"error": "Message not found or not updated"}, status_code=404)
 
-        # Optionally store in in-memory contexts as well
-        llm_memory_contexts[message_id] = memory_context
-
-        return {"bot": response}
+        return {
+            "bot": response,
+            "total_messages": len(memory_context),
+            "current_page": page,
+            "limit": limit
+        }
 
     except Exception as e:
         logger.error(f"Error generating response: {e}")

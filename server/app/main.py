@@ -1,5 +1,4 @@
-# app/main.py
-from fastapi import FastAPI, HTTPException, Request, APIRouter
+from fastapi import FastAPI, HTTPException, Request, APIRouter, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional
@@ -9,7 +8,8 @@ from pymongo import MongoClient
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-from app.models import Message, PromptRequest, User, LoginRequest
+from app.models import Message, PromptRequest, User, LoginRequest, GetMessagesRequest
+import logging
 
 from app.controllers import chat_controller, user_controller
 
@@ -25,8 +25,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
-
-client = MongoClient(f"mongodb+srv://draunzler:{db_pass}@cluster0.bszcu.mongodb.net/<database>?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidCertificates=true")
+logging.getLogger("pymongo").setLevel(logging.WARNING)
+client = MongoClient(f"mongodb+srv://draunzler:{db_pass}@cluster0.bszcu.mongodb.net/")
 db = client["test"]
 messages_collection = db["messages"]
 
@@ -34,9 +34,9 @@ messages_collection = db["messages"]
 async def create_message(message: Message):
     return await chat_controller.create_message(message, messages_collection)
 
-@app.get("/api/messages/get")
-async def get_messages(user_id: str, message_id: str):
-    return await chat_controller.get_messages(user_id, message_id, messages_collection)
+@app.post("/api/messages/get")
+async def get_messages(request: GetMessagesRequest):
+    return await chat_controller.get_messages(request, messages_collection)
 
 @app.get("/")
 def read_root():

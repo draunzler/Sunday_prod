@@ -6,3 +6,9 @@ class Message(BaseModel):
     user_id: str
     message_id: Optional[str] = None
     name: str
+
+class GetMessagesRequest(BaseModel):
+    user_id: str
+    message_id: str
+    page: Optional[int] = 1
+    limit: Optional[int] = 10
