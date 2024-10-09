@@ -70,7 +70,8 @@ async def generate_response(prompt_request, messages_collection):
         user_id = prompt_request.user_id
         message_id = prompt_request.message_id
         page = prompt_request.page if 'page' in prompt_request else 1
-        limit = 10  # Always limit to the latest 10 messages
+        limit = 10
+        context_limit = 5
 
         logger.debug(f"Received prompt: {prompt}")
         logger.debug(f"User ID: {user_id}, Message ID: {message_id}, Page: {page}, Limit: {limit}")
@@ -83,32 +84,27 @@ async def generate_response(prompt_request, messages_collection):
                 memory_context = []
             else:
                 total_messages = len(message_doc["messages"])
-                # Fetch only the latest 10 messages, if there are more than 10
-                memory_context = message_doc["messages"][-limit:]
+                memory_context = message_doc["messages"][-context_limit:]
 
-        # Prepare the history with the latest 10 messages in chronological order
         history = "\n".join([f"User: {m['prompt']}\nBot: {m['response']}" for m in memory_context])
         full_input = f"{history}\nUser: {prompt}"
 
-        # Generate the response using the model
         response = llm_chain.predict(input=full_input)
         logger.info(f"Generated response: {response}")
 
-        # Add the new interaction to the context
         new_interaction = {
             "prompt": prompt,
             "response": response,
             "timestamp": datetime.utcnow().isoformat()
         }
 
-        # Append the new interaction and truncate to keep the latest 10 messages
         memory_context.append(new_interaction)
-        memory_context = memory_context[-limit:]  # Keep only the latest 10 messages
+        memory_context = memory_context[-context_limit:]
 
         if message_id:
             update_data = {
                 "$set": {
-                    "messages": memory_context  # Overwrite with the truncated messages
+                    "messages": memory_context
                 }
             }
             result = messages_collection.update_one(
