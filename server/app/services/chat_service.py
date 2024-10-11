@@ -84,6 +84,7 @@ async def generate_response(prompt_request, messages_collection):
                 memory_context = []
             else:
                 total_messages = len(message_doc["messages"])
+                # Get only the last `context_limit` messages for context in memory
                 memory_context = message_doc["messages"][-context_limit:]
 
         history = "\n".join([f"User: {m['prompt']}\nBot: {m['response']}" for m in memory_context])
@@ -98,13 +99,15 @@ async def generate_response(prompt_request, messages_collection):
             "timestamp": datetime.utcnow().isoformat()
         }
 
+        # Add the new interaction to the memory context for future responses
         memory_context.append(new_interaction)
-        memory_context = memory_context[-context_limit:]
+        memory_context = memory_context[-context_limit:]  # Keep only last `context_limit` for context
 
         if message_id:
+            # Append the new interaction to the entire message history in the DB, not just memory context
             update_data = {
-                "$set": {
-                    "messages": memory_context
+                "$push": {
+                    "messages": new_interaction  # Append the new message to the DB
                 }
             }
             result = messages_collection.update_one(
@@ -117,12 +120,13 @@ async def generate_response(prompt_request, messages_collection):
             if result.modified_count == 0:
                 return JSONResponse({"error": "Message not found or not updated"}, status_code=404)
 
+        # Clear memory context after use
         memory_context = []
         logger.debug("Memory context cleared.")
 
         return {
             "bot": response,
-            "total_messages": len(total_messages) if message_id else 0,
+            "total_messages": total_messages if message_id else 0,
             "current_page": page,
             "limit": limit
         }
