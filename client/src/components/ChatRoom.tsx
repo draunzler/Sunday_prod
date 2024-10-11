@@ -26,6 +26,7 @@ const ChatRoom: React.FC = observer(() => {
   const [chatMessages, setChatMessages] = useState<IChat | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
+  let newPage = 1;
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const maxRows = 10;
@@ -36,12 +37,13 @@ const ChatRoom: React.FC = observer(() => {
 
   useEffect(() => {
     const fetchChatMessages = async () => {
+      newPage = 1;
       setIsLoading(true);
-      const chat = await chatStore.fetchChat(id!, sessionStorage.getItem('user_id')!, page, limit);
+      const chat = await chatStore.fetchChat(id!, sessionStorage.getItem('user_id')!, newPage, limit);
       setChatMessages(chat);
       setIsLoading(false);
     };
-    setIsSidebarCollapsed(true);
+    setIsSidebarCollapsed(false);
     fetchChatMessages();
   }, [id]);
 
@@ -54,7 +56,7 @@ const ChatRoom: React.FC = observer(() => {
   const handleScroll = async () => {
     if (chatContainerRef.current && chatContainerRef.current.scrollTop === 0 && !isLoading) {
       setIsLoading(true);
-      const newPage = page + 1;
+      newPage = page + 1;
       const previousMessages = await chatStore.fetchChat(id!, sessionStorage.getItem('user_id')!, newPage, limit);
 
       if (previousMessages && previousMessages.messages.length > 0) {
@@ -152,10 +154,12 @@ const ChatRoom: React.FC = observer(() => {
   };
 
   return (
-    <div style={{display: "grid", gridTemplateColumns: "2fr 10fr"}}>
+    <div className={styles.outermostContainer}>
       <Sidebar isCollapsed={isSidebarCollapsed} />
       <div className={styles.chatRoomContainer}>
-        <h1>{chatMessages?.name}</h1>
+        <div className={styles.chatName}>
+          <h1>{chatMessages?.name}</h1>
+        </div>
         <div 
           className={styles.chatContainer} 
           ref={chatContainerRef}
@@ -165,11 +169,6 @@ const ChatRoom: React.FC = observer(() => {
             <div key={index} className={styles.chat}>
               <div className={styles.prompt}> {msg.prompt} </div>
               <div className={styles.response}>
-                <img 
-                  src="/sunday_dark.svg"
-                  alt="Sunday"
-                  className={styles.sundayIcon}
-                />
                 {isGenerating ? (
                   <div className={styles.loader}>
                     <span>.</span><span>.</span><span>.</span> 

@@ -11,6 +11,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = observer(({ isCollapsed }) => {
   const navigate = useNavigate();
   const [showChatsDropdown, setShowChatsDropdown] = useState(false);
+  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const userId = sessionStorage.getItem('user_id');
@@ -25,50 +26,63 @@ const Sidebar: React.FC<SidebarProps> = observer(({ isCollapsed }) => {
     setShowChatsDropdown((prevState) => !prevState);
   };
 
+  const toggleMobileSidebar = () => {
+    setMobileSidebarOpen((prev) => !prev);
+  };
+
   return (
-    <div className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
-      <div className={styles.sidebarHeader}>
-        <img src="/sunday_dark.svg" alt="" />
-        <h1>Sunday</h1>
+    <>
+      <button className={styles.mobileMenuButton} onClick={toggleMobileSidebar}>
+        ☰
+      </button>
+
+      <div className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''} ${isMobileSidebarOpen ? styles.openMobile : ''}`}>
+        <div className={styles.sidebarHeader} onClick={() => navigate('/')}>
+          <img src="/sunday_dark.svg" alt="" />
+          <h1>Sunday</h1>
+        </div>
+        <ul className={styles.menuList}>
+          <li className={styles.menuItem}>
+            <button onClick={() => navigate('/')}>
+              Dashboard
+            </button>
+          </li>
+
+          <li className={styles.menuItem}>
+            <button
+              className={styles.dropdownToggle}
+              onClick={toggleChatsDropdown}
+            >
+              Chats
+              <span className={`${styles.arrow} ${showChatsDropdown ? styles.up : styles.down}`}>
+                  ▶
+              </span>
+            </button>
+
+            {showChatsDropdown && (
+              <div className={styles.dropdown}>
+                {chatStore.chats.length > 0 ? (
+                  <ul className={styles.chatList}>
+                    {chatStore.chats.map((chat) => (
+                      <li key={chat._id} className={styles.chatItem}>
+                        <button onClick={() => handleContinue(chat._id)}
+                          title={chat.message_name || 'Unnamed Chat'}>
+                          {chat.message_name || 'Unnamed Chat'}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No chats available.</p>
+                )}
+              </div>
+            )}
+          </li>
+        </ul>
       </div>
-      <ul className={styles.menuList}>
-        <li className={styles.menuItem}>
-          <button onClick={() => navigate('/')}>
-            Dashboard
-          </button>
-        </li>
 
-        <li className={styles.menuItem}>
-        <button
-            className={styles.dropdownToggle}
-            onClick={toggleChatsDropdown}
-          >
-            Chats
-            <span className={`${styles.arrow} ${showChatsDropdown ? styles.up : styles.down}`}>
-                ▶
-            </span>
-          </button>
-
-          {showChatsDropdown && (
-            <div className={styles.dropdown}>
-              {chatStore.chats.length > 0 ? (
-                <ul className={styles.chatList}>
-                  {chatStore.chats.map((chat) => (
-                    <li key={chat._id} className={styles.chatItem}>
-                      <button onClick={() => handleContinue(chat._id)}>
-                        {chat.message_name || 'Unnamed Chat'}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No chats available.</p>
-              )}
-            </div>
-          )}
-        </li>
-      </ul>
-    </div>
+      {isMobileSidebarOpen && <div className={styles.overlay} onClick={toggleMobileSidebar} />}
+    </>
   );
 });
 
