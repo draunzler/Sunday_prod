@@ -76,6 +76,7 @@ async def generate_response(prompt_request, messages_collection):
         logger.debug(f"Received prompt: {prompt}")
         logger.debug(f"User ID: {user_id}, Message ID: {message_id}, Page: {page}, Limit: {limit}")
 
+        # Retrieve memory context if message_id is provided
         if not message_id:
             memory_context = []
         else:
@@ -86,12 +87,15 @@ async def generate_response(prompt_request, messages_collection):
                 total_messages = len(message_doc["messages"])
                 memory_context = message_doc["messages"][-context_limit:]
 
+        # Combine context with current user prompt
         history = "\n".join([f"User: {m['prompt']}\nBot: {m['response']}" for m in memory_context])
         full_input = f"{history}\nUser: {prompt}"
 
+        # Generate the response from LLM chain
         response = llm_chain.predict(input=full_input)
         logger.info(f"Generated response: {response}")
 
+        # Add the current interaction to memory
         new_interaction = {
             "prompt": prompt,
             "response": response,
@@ -99,8 +103,9 @@ async def generate_response(prompt_request, messages_collection):
         }
 
         memory_context.append(new_interaction)
-        memory_context = memory_context[-context_limit:]
+        memory_context = memory_context[-context_limit:]  # Keep only the last N messages
 
+        # Update the messages collection if message_id exists
         if message_id:
             update_data = {
                 "$set": {
@@ -117,9 +122,13 @@ async def generate_response(prompt_request, messages_collection):
             if result.modified_count == 0:
                 return JSONResponse({"error": "Message not found or not updated"}, status_code=404)
 
+        # Clear memory_context after updating and before returning
+        cleared_context = []  # Resetting the memory context to empty
+        logger.debug("Memory context cleared.")
+
         return {
             "bot": response,
-            "total_messages": len(memory_context),
+            "total_messages": len(total_messages) if message_id else 0,
             "current_page": page,
             "limit": limit
         }
