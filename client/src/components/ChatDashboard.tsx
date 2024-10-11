@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import chatStore from '../stores/ChatStore';
 import userStore from '../stores/UserStore';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
 import CreateChat from './CreateChat';
 import Modal from './Modal';
 import styles from "../styles/chatDashboard.module.scss";
@@ -63,7 +62,6 @@ const ChatDashboard: React.FC = observer(() => {
 
   return (
     <div className={styles.dashboardContainer}>
-      <Sidebar isCollapsed={isSidebarCollapsed} />
       <div className={isSidebarCollapsed ? styles.contentCollapsed : styles.content}>
         <header>
           <h2>Welcome, {userStore.user?.name} </h2>

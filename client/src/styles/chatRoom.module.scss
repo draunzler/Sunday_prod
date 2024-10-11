@@ -44,7 +44,31 @@
                 text-wrap: wrap;
             }
             .response{
+                display: flex;
                 line-height: 1.75rem;
+                .loader {
+                    display: inline-block;
+                    margin-right: 10px;
+                
+                    span { 
+                      display: inline-block;
+                      margin: 0 2px;
+                      font-size: 1.2rem;
+                      animation: blink 1s infinite steps(1);
+                    }
+                
+                    @keyframes blink{
+                      50% { opacity: 0; }
+                    }
+                }
+                .sundayIcon{
+                    border: 1px solid #d9d9d920;
+                    border-radius: 50%;
+                    padding: 0.35rem;
+                    width: 35px;
+                    height: 35px;
+                    margin-right: 10px;
+                }
                 table{
                     border-spacing: 0;
                     width: 100%;

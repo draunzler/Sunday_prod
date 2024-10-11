@@ -32,6 +32,7 @@ const ChatRoom: React.FC = observer(() => {
   const rowHeight = 24;
   const limit = 10;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const fetchChatMessages = async () => {
@@ -82,6 +83,7 @@ const ChatRoom: React.FC = observer(() => {
     if (!userInput) return;
 
     textareaRef.current.value = '';
+    setIsGenerating(true);
 
     try {
       const aiResponse = await chatStore.sendPrompt(userId, messageId, userInput);
@@ -109,6 +111,8 @@ const ChatRoom: React.FC = observer(() => {
     } catch (error) {
       console.error('Error sending prompt:', error);
       alert(error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -160,14 +164,27 @@ const ChatRoom: React.FC = observer(() => {
           {chatMessages?.messages.map((msg, index) => (
             <div key={index} className={styles.chat}>
               <div className={styles.prompt}> {msg.prompt} </div>
-              <div className={styles.response}> 
-                <ReactMarkdown 
-                  components={{
-                    code: CodeBlock,
-                  }} 
-                >
-                  {msg.response}
-                </ReactMarkdown>
+              <div className={styles.response}>
+                <img 
+                  src="/sunday_dark.svg"
+                  alt="Sunday"
+                  className={styles.sundayIcon}
+                />
+                {isGenerating ? (
+                  <div className={styles.loader}>
+                    <span>.</span><span>.</span><span>.</span> 
+                  </div>
+                ) : (
+                  <div>
+                    <ReactMarkdown 
+                      components={{
+                        code: CodeBlock,
+                      }} 
+                    >
+                      {msg.response}
+                    </ReactMarkdown>
+                  </div>
+                )}
               </div>
               <em>
                 {
