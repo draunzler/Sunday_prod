@@ -34,6 +34,10 @@ messages_collection = db["messages"]
 async def create_message(message: Message):
     return await chat_controller.create_message(message, messages_collection)
 
+@app.delete("/api/messages/delete/{message_id}")
+async def delete_message(user_id: str, message_id: str):
+    return await chat_controller.delete_message(user_id, message_id, messages_collection)
+
 @app.post("/api/messages/get")
 async def get_messages(request: GetMessagesRequest):
     return await chat_controller.get_messages(request, messages_collection)

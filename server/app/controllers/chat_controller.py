@@ -11,7 +11,7 @@ from app.services import chat_service
 
 def serialize_message(message):
     """Convert MongoDB message document to a JSON-serializable format."""
-    message["_id"] = str(message["_id"])  # Convert ObjectId to string
+    message["_id"] = str(message["_id"])
     return message
 
 async def create_message(message: Message, messages_collection):
@@ -29,6 +29,21 @@ async def create_message(message: Message, messages_collection):
 
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+    
+async def delete_message(user_id: str, message_id: str, messages_collection):
+    try:
+        message_id_obj = ObjectId(message_id)
+
+        # Find the document that matches the user_id and message_id
+        result = messages_collection.delete_one({"_id": message_id_obj, "user_id": user_id})
+
+        if result.deleted_count == 1:
+            return JSONResponse({"message": "Message deleted successfully"})
+        else:
+            return JSONResponse({"error": "Message not found or not authorized"}, status_code=404)
+
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to delete message: {e}"}, status_code=400)
 
 async def get_messages(request: GetMessagesRequest, messages_collection):
     try:
@@ -40,16 +55,13 @@ async def get_messages(request: GetMessagesRequest, messages_collection):
             messages = document.get("messages", [])
             total_messages = len(messages)
 
-            # Reverse the entire list of messages so the newest messages come first
             messages.reverse()
 
             start = (request.page - 1) * request.limit
             end = start + request.limit
 
-            # Fetch the slice of messages for the current page
             paginated_messages = messages[start:end]
 
-            # But keep the paginated messages in chronological order
             paginated_messages.reverse()
 
             response = {
