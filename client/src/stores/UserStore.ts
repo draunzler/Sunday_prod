@@ -14,7 +14,7 @@ class UserStore {
       const userData = await login(email, password);
       
       if (userData && userData.user_id) {
-        sessionStorage.setItem('user_id', userData.user_id);
+        localStorage.setItem('user_id', userData.user_id);
       }
       
       this.user = userData;
@@ -30,7 +30,7 @@ class UserStore {
       const userData = await signup(name, email, password);
       
       if (userData && userData.user_id) {
-        sessionStorage.setItem('user_id', userData.user_id);
+        localStorage.setItem('user_id', userData.user_id);
       }
       
       this.user = userData;
@@ -43,13 +43,13 @@ class UserStore {
 
   logout() {
     this.user = null;
-    sessionStorage.removeItem('user_id');
+    localStorage.removeItem('user_id');
   }
 
   async loadDetails(userId: string) {
     try {
       if (!userId) {
-        throw new Error("User ID not found in sessionStorage");
+        throw new Error("User ID not found in localStorage");
       }
       const userData = await fetchUser(userId);
       this.user = userData;

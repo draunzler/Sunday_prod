@@ -9,7 +9,7 @@ import styles from "../styles/chatDashboard.module.scss";
 
 const ChatDashboard: React.FC = observer(() => {
   const navigate = useNavigate();
-  const userId = sessionStorage.getItem('user_id');
+  const userId = localStorage.getItem('user_id');
   const [showDropdown, setShowDropdown] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);

@@ -14,7 +14,7 @@ class ChatStore {
   async loadChats(userId: string) {
     try {
       if (!userId) {
-        throw new Error("User ID not found in sessionStorage");
+        throw new Error("User ID not found in localStorage");
       }
       const chatsData = await fetchChats(userId);
       this.chats = chatsData.messages;

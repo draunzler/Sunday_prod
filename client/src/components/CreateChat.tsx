@@ -10,7 +10,7 @@ interface CreateChatProps {
 }
 
 const CreateChat: React.FC<CreateChatProps> = observer(({ isOpen, onClose }) => {
-    const userId = sessionStorage.getItem('user_id');
+    const userId = localStorage.getItem('user_id');
     const [chatName, setChatName] = useState('');
     const navigate = useNavigate();
 

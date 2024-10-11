@@ -32,6 +32,7 @@ const ChatRoom: React.FC = observer(() => {
   const maxRows = 10;
   const rowHeight = 24;
   const limit = 10;
+  const userId = localStorage.getItem('user_id');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -39,7 +40,7 @@ const ChatRoom: React.FC = observer(() => {
     const fetchChatMessages = async () => {
       newPage = 1;
       setIsLoading(true);
-      const chat = await chatStore.fetchChat(id!, sessionStorage.getItem('user_id')!, newPage, limit);
+      const chat = await chatStore.fetchChat(id!, userId!, newPage, limit);
       setChatMessages(chat);
       setIsLoading(false);
     };
@@ -57,7 +58,7 @@ const ChatRoom: React.FC = observer(() => {
     if (chatContainerRef.current && chatContainerRef.current.scrollTop === 0 && !isLoading) {
       setIsLoading(true);
       newPage = page + 1;
-      const previousMessages = await chatStore.fetchChat(id!, sessionStorage.getItem('user_id')!, newPage, limit);
+      const previousMessages = await chatStore.fetchChat(id!, userId!, newPage, limit);
 
       if (previousMessages && previousMessages.messages.length > 0) {
         setChatMessages(prev => ({
@@ -74,7 +75,6 @@ const ChatRoom: React.FC = observer(() => {
   const handleSendPrompt = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const userId = sessionStorage.getItem('user_id')!;
     const messageId = id!;
     const userInput = textareaRef.current?.value;
 
@@ -88,7 +88,7 @@ const ChatRoom: React.FC = observer(() => {
     setIsGenerating(true);
 
     try {
-      const aiResponse = await chatStore.sendPrompt(userId, messageId, userInput);
+      const aiResponse = await chatStore.sendPrompt(userId!, messageId, userInput);
 
       const newMessage = {
         prompt: userInput,

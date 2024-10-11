@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedLayout: React.FC = () => {
-  const userId = sessionStorage.getItem('user_id');
+  const userId = localStorage.getItem('user_id');
 
   if (!userId) {
     // Redirect to login if the user is not authenticated

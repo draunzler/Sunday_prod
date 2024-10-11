@@ -14,7 +14,7 @@ const Sidebar: React.FC<SidebarProps> = observer(({ isCollapsed }) => {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const userId = sessionStorage.getItem('user_id');
+    const userId = localStorage.getItem('user_id');
     chatStore.loadChats(userId!);
   }, []);
 
