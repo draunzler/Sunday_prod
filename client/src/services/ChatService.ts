@@ -22,6 +22,11 @@ export const fetchChatById = async (userId: string, chatId: string, page: number
   return response.data;
 };
 
+export const deleteChatById = async (chatId: string, userId: string,): Promise<{message: string}> => {
+  const response = await axios.delete(`${LOCALHOST_URL}/api/messages/delete/${chatId}?user_id=${userId}`);
+  return response.data;
+};
+
 export const sendChatPrompt = async (userId: string, messageId: string, prompt: string) => {
   const requestBody = {
     user_id: userId,

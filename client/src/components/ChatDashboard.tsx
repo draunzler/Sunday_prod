@@ -43,10 +43,24 @@ const ChatDashboard: React.FC = observer(() => {
     setShowDropdown(!showDropdown);
   };
 
-  const handleContinue = async (chatId: string) => {
+  const handleContinue = async (chatId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
     if (userId) {
       try {
         await chatStore.fetchChat(chatId, userId, 1, 10);
+        setIsSidebarCollapsed(true);
+        navigate(`/chat/${chatId}`);
+      } catch (error) {
+        console.error("Failed to continue to chat", error);
+      }
+    }
+  };
+
+  const handleDelete = async (chatId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (userId) {
+      try {
+        await chatStore.deleteChat(chatId, userId);
         setIsSidebarCollapsed(true);
         navigate(`/chat/${chatId}`);
       } catch (error) {
@@ -134,10 +148,17 @@ const ChatDashboard: React.FC = observer(() => {
                     })()
                   }
                 </td>
-                <td>
-                  <button style={{ display: "block", margin: "auto" }} onClick={() => handleContinue(chat._id)}>
-                    Continue
-                  </button>
+                <td style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+                  <div>
+                    <button onClick={(event) => handleContinue(chat._id, event)}>
+                      Continue
+                    </button>
+                  </div>
+                  <div>
+                    <button className={styles.deleteBtn} onClick={(event) => handleDelete(chat._id, event)}>
+                      <img src="/delete.svg" alt="" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import chatStore from '../stores/ChatStore';
 import styles from "../styles/sidebar.module.scss";
 
@@ -10,7 +10,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = observer(({ isCollapsed }) => {
   const navigate = useNavigate();
-  const [showChatsDropdown, setShowChatsDropdown] = useState(false);
+  const { id } = useParams<{ id: string }>(); // Get the ID from URL params
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -20,10 +20,10 @@ const Sidebar: React.FC<SidebarProps> = observer(({ isCollapsed }) => {
 
   const handleContinue = (chatId: string) => {
     navigate(`/chat/${chatId}`);
-  };
-
-  const toggleChatsDropdown = () => {
-    setShowChatsDropdown((prevState) => !prevState);
+    // Close the sidebar on mobile when a chat is clicked
+    if (isMobileSidebarOpen) {
+      toggleMobileSidebar();
+    }
   };
 
   const toggleMobileSidebar = () => {
@@ -43,39 +43,24 @@ const Sidebar: React.FC<SidebarProps> = observer(({ isCollapsed }) => {
         </div>
         <ul className={styles.menuList}>
           <li className={styles.menuItem}>
-            <button onClick={() => navigate('/')}>
-              Dashboard
-            </button>
-          </li>
-
-          <li className={styles.menuItem}>
-            <button
-              className={styles.dropdownToggle}
-              onClick={toggleChatsDropdown}
-            >
-              Chats
-              <span className={`${styles.arrow} ${showChatsDropdown ? styles.up : styles.down}`}>
-                  ▶
-              </span>
-            </button>
-
-            {showChatsDropdown && (
-              <div className={styles.dropdown}>
-                {chatStore.chats.length > 0 ? (
-                  <ul className={styles.chatList}>
-                    {chatStore.chats.map((chat) => (
-                      <li key={chat._id} className={styles.chatItem}>
-                        <button onClick={() => handleContinue(chat._id)}
-                          title={chat.message_name || 'Unnamed Chat'}>
-                          {chat.message_name || 'Unnamed Chat'}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No chats available.</p>
-                )}
-              </div>
+            {chatStore.chats.length > 0 ? (
+              <ul className={styles.chatList}>
+                {chatStore.chats.map((chat) => (
+                  <li
+                    key={chat._id}
+                    className={`${styles.chatItem} ${id === chat._id ? styles.activeChat : ''}`}
+                  >
+                    <button
+                      onClick={() => handleContinue(chat._id)}
+                      title={chat.message_name || 'Unnamed Chat'}
+                    >
+                      {chat.message_name || 'Unnamed Chat'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No chats available.</p>
             )}
           </li>
         </ul>

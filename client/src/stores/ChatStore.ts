@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { IMessage } from '../interfaces/IUser';
 import { IChat } from '../interfaces/IChat';
-import { fetchChats, fetchChatById, sendChatPrompt, createChat } from '../services/ChatService';
+import { fetchChats, fetchChatById, sendChatPrompt, createChat, deleteChatById } from '../services/ChatService';
 
 class ChatStore {
   chats: IMessage[] = [];
@@ -29,6 +29,16 @@ class ChatStore {
       const chatData = await fetchChatById(userId, chatId, page, limit);
       this.selectedChat = chatData;
       return chatData;
+    } catch (error) {
+      console.error("Failed to fetch chat", error);
+      throw error;
+    }
+  }
+
+  async deleteChat(chatId: string, userId: string) {
+    try {
+      const chatData = await deleteChatById(chatId, userId);
+      console.log(chatData);
     } catch (error) {
       console.error("Failed to fetch chat", error);
       throw error;

@@ -59,8 +59,8 @@
         }
     }
     table{
-        padding: 2rem;
-        width: 100%;
+        margin: 2rem;
+        width: calc(100% - 4rem);
         border-collapse: collapse;
         .firstCol{
             width: 15rem;
@@ -69,7 +69,19 @@
         }
         button{
             border: 1px solid transparent;
-            width: 25%;
+            display: inline-block !important;
+            margin: 0 !important;
+        }
+        .deleteBtn{
+            background: #d20a2e;
+            width: 43.8px;
+            &:hover{
+                border: 1px solid transparent;
+            }
+            img{
+                height: 15px;
+                width: auto;
+            }
         }
         tbody{
             tr{

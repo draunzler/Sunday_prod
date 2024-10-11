@@ -14,13 +14,30 @@
             height: 66.4px;
             display: flex;
             align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+            @media screen and (max-width: 700px) {
+                justify-content: center;
+            }
+            button{
+                margin-right: 2rem;
+                background: transparent;
+                border: 1px solid #d9d9d980;
+                color: #d9d9d9;
+                &:hover{
+                    border: 1px solid #58D033;
+                }
+                @media screen and (max-width: 700px) {
+                    margin-right: 0;
+                }
+            }
         }
         .chatContainer{
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
             width: 100%;
-            @media screen and (max-width: 700px) {
+            @media screen and (max-width: 900px) {
                 width: 100vw;
             }
             &::-webkit-scrollbar-track {

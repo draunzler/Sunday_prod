@@ -8,6 +8,8 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import styles from "../styles/chatRoom.module.scss";
 import Sidebar from './Sidebar';
+import Modal from './Modal';
+import CreateChat from './CreateChat';
 
 const customStyle = {
   ...materialDark,
@@ -33,6 +35,7 @@ const ChatRoom: React.FC = observer(() => {
   const rowHeight = 24;
   const limit = 10;
   const userId = localStorage.getItem('user_id');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -156,9 +159,12 @@ const ChatRoom: React.FC = observer(() => {
   return (
     <div className={styles.outermostContainer}>
       <Sidebar isCollapsed={isSidebarCollapsed} />
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <CreateChat isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      </Modal>
       <div className={styles.chatRoomContainer}>
         <div className={styles.chatName}>
-          <h1>{chatMessages?.name}</h1>
+          <button onClick={() => setIsModalOpen(true)}>Create New Chat</button>
         </div>
         <div 
           className={styles.chatContainer} 
@@ -169,21 +175,15 @@ const ChatRoom: React.FC = observer(() => {
             <div key={index} className={styles.chat}>
               <div className={styles.prompt}> {msg.prompt} </div>
               <div className={styles.response}>
-                {isGenerating ? (
-                  <div className={styles.loader}>
-                    <span>.</span><span>.</span><span>.</span> 
-                  </div>
-                ) : (
-                  <div>
-                    <ReactMarkdown 
-                      components={{
-                        code: CodeBlock,
-                      }} 
-                    >
-                      {msg.response}
-                    </ReactMarkdown>
-                  </div>
-                )}
+                <div>
+                  <ReactMarkdown 
+                    components={{
+                      code: CodeBlock,
+                    }} 
+                  >
+                    {msg.response}
+                  </ReactMarkdown>
+                </div>
               </div>
               <em>
                 {
@@ -204,6 +204,9 @@ const ChatRoom: React.FC = observer(() => {
             </div>
           ))}
         </div>
+        {isGenerating && (
+          <>Generating...</>
+        )}
         <form onSubmit={handleSendPrompt} className={styles.formContainer}>
           <textarea
             ref={textareaRef}

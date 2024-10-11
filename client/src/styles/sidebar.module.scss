@@ -3,6 +3,7 @@
     height: 100vh;
     position: relative;
     transition: transform 0.3s ease;
+    width: 240px;
     &.collapsed {
       width: 4.25rem;
     }
@@ -22,53 +23,33 @@
     li {
       list-style-type: none;
     }
-    .dropdownToggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-    .arrow {
-      margin-left: 0.5rem;
-      transition: transform 0.3s ease-out;
-    }
-    .down {
-      transform: rotate(0deg);
-    }
-    .up {
-      transform: rotate(90deg);
-    }
     .menuList {
-      padding: 1rem;
-  
-      button {
-        padding-left: 1rem;
-        border: none;
-        width: 100%;
-        text-align: left;
-        background: transparent;
-        color: #d9d9d9;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        
-        &:hover {
-          border: none;
-          background: #58d033;
-          color: #121212;
-          border-radius: 4px;
-  
-          span {
+        padding: 1rem;
+        .chatItem {
+          button {
+            padding-left: 1rem;
+            border: none;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            color: #d9d9d9;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+      
+            &:hover {
+              border: none;
+              background: #d9d9d920;
+              border-radius: 4px;
+            }
+          }
+      
+          &.activeChat button {
+            background: #58d033;
             color: #121212;
+            border-radius: 4px;
           }
         }
-      }
-  
-      .chatItem {
-        button {
-          padding-left: 2rem;
-        }
-      }
     }
     .sidebarHeader {
       padding: 1.5rem 2rem;
