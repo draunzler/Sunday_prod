@@ -96,6 +96,11 @@ async def get_user(user_id):
 def send_verification_email(email: str, token: str):
     sender_email = os.getenv("SENDER_EMAIL")
     sender_password = os.getenv("SENDER_PASSWORD")
+    
+    if not sender_email or not sender_password:
+        logger.error("Missing sender email or password environment variables")
+        return {"error": "Missing email configuration"}
+
     recipient_email = email
     subject = "Verify your email"
     body = f"Click the link to verify your email: https://sunday-prod.onrender.com/api/users/verify/{token}"
@@ -107,9 +112,17 @@ def send_verification_email(email: str, token: str):
     msg.attach(MIMEText(body, "plain"))
 
     try:
+        logger.info(f"Connecting to SMTP server with {sender_email}")
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_password)
+            logger.info(f"Sending email to {recipient_email}")
             server.sendmail(sender_email, recipient_email, msg.as_string())
         return {"message": "Verification email sent successfully"}
+
+    except smtplib.SMTPException as smtp_error:
+        logger.error(f"SMTP error occurred: {smtp_error}")
+        return {"error": str(smtp_error)}
+
     except Exception as e:
+        logger.error(f"General error: {e}")
         return {"error": str(e)}
