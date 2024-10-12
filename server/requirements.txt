@@ -7,3 +7,4 @@ langchain
 langchain-google-genai
 google-generativeai
 bcrypt
+email-validator

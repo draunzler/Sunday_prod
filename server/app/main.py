@@ -29,6 +29,7 @@ logging.getLogger("pymongo").setLevel(logging.WARNING)
 client = MongoClient(f"mongodb+srv://draunzler:{db_pass}@cluster0.bszcu.mongodb.net/")
 db = client["test"]
 messages_collection = db["messages"]
+users_collection = db["users"]
 
 @app.post("/api/messages/create")
 async def create_message(message: Message):
@@ -65,6 +66,17 @@ async def login_user(login_request: LoginRequest):
 @app.get("/api/users/get/{user_id}")
 async def get_user(user_id: str):
     return await user_controller.get_user(user_id)
+
+@app.get("/api/users/verify/{token}")
+async def verify_email(token: str):
+    user = users_collection.find_one({"verification_token": token})
+
+    if not user:
+        return JSONResponse({"error": "Invalid token"}, status_code=400)
+
+    users_collection.update_one({"_id": user["_id"]}, {"$set": {"is_verified": True, "verification_token": None}})
+
+    return JSONResponse({"message": "Email verified successfully"})
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5000)

@@ -7,6 +7,9 @@ from datetime import datetime
 import bcrypt
 import os
 from dotenv import load_dotenv
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from app.models import User
 
@@ -43,13 +46,14 @@ async def create_user(user_data):
 
 async def login_user(email: str, password: str):
     try:
-        # Find the user by email
         user = users_collection.find_one({"email": email})
 
         if user is None:
             return JSONResponse({"error": "User not found"}, status_code=404)
 
-        # Validate the password
+        if not user["is_verified"]:
+            return JSONResponse({"error": "Email not verified"}, status_code=403)
+
         if bcrypt.checkpw(password.encode('utf-8'), user["password"].encode('utf-8')):
             return JSONResponse({"message": "Login successful", "user_id": str(user["_id"])})
         else:
@@ -88,3 +92,24 @@ async def get_user(user_id):
     
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+    
+def send_verification_email(email: str, token: str):
+    sender_email = os.getenv("SENDER_EMAIL")
+    sender_password = os.getenv("SENDER_PASSWORD")
+    recipient_email = email
+    subject = "Verify your email"
+    body = f"Click the link to verify your email: https://sunday-prod.onrender.com/api/users/verify/{token}"
+
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = recipient_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipient_email, msg.as_string())
+        return {"message": "Verification email sent successfully"}
+    except Exception as e:
+        return {"error": str(e)}
