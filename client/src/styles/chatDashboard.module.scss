@@ -3,9 +3,15 @@
         display: flex;
         justify-content: space-between;
         padding: 2rem;
+        padding-bottom: 0.75rem;
         width: 100%;
+        background: #121212;
         position: sticky;
         top: 0;
+        @media screen and (max-width: 700px) {
+            padding: 0.75rem;
+            width: 100vw;
+        }
         .dropdown{
             position: absolute;
             right: 0;
@@ -58,43 +64,56 @@
             border: 1px solid #58D033;
         }
     }
-    table{
-        margin: 2rem;
-        width: calc(100% - 4rem);
-        border-collapse: collapse;
-        .firstCol{
-            width: 15rem;
-            text-align: left;
-            padding-left: 1rem;
-        }
+    .tableContainer{
+        overflow-x: auto;
         button{
             border: 1px solid transparent;
             display: inline-block !important;
             margin: 0 !important;
-        }
-        .deleteBtn{
-            background: #d20a2e;
-            width: 43.8px;
             &:hover{
-                border: 1px solid transparent;
-            }
-            img{
-                height: 15px;
-                width: auto;
+                border: 1px solid #58D033;
             }
         }
-        tbody{
-            tr{
-                &:hover{
-                    background: #d9d9d908;
+        table{
+            margin: 2rem;
+            width: calc(100% - 4rem);
+            border-collapse: collapse;
+            @media screen and (max-width: 700px) {
+                width: 100%;
+                margin: 0;
+            }
+            .firstCol{
+                width: 15rem;
+                text-align: left;
+                padding-left: 1rem;
+                @media screen and (max-width: 700px) {
+                    width: auto;
                 }
             }
-        }
-        td{
-            padding: 0.5rem 1rem;
-        }
-        td{
-            border-bottom: 1px solid #d9d9d920;
+            .deleteBtn{
+                background: #d20a2e;
+                width: 43.8px;
+                &:hover{
+                    border: 1px solid transparent;
+                }
+                img{
+                    height: 15px;
+                    width: auto;
+                }
+            }
+            tbody{
+                tr{
+                    &:hover{
+                        background: #d9d9d908;
+                    }
+                }
+            }
+            td{
+                padding: 0.5rem 1rem;
+            }
+            td{
+                border-bottom: 1px solid #d9d9d920;
+            }
         }
     }
     .createBtn{
