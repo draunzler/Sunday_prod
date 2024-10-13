@@ -62,9 +62,10 @@ const ChatDashboard: React.FC = observer(() => {
       try {
         await chatStore.deleteChat(chatId, userId);
         setIsSidebarCollapsed(true);
-        navigate(`/chat/${chatId}`);
       } catch (error) {
         console.error("Failed to continue to chat", error);
+      } finally {
+        chatStore.loadChats(userId!);
       }
     }
   };
@@ -120,50 +121,54 @@ const ChatDashboard: React.FC = observer(() => {
         <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
           <CreateChat isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </Modal>
-        <table>
-          <thead>
-            <tr>
-              <th className={styles.firstCol}>Chat name</th>
-              <th>Created At</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {chatStore.chats.map((chat) => (
-              <tr key={chat._id}>
-                <td>{chat.message_name}</td>
-                <td style={{ textAlign: "center" }}>
-                  {
-                    (() => {
-                      const chatDate = new Date(chat.created);
-                      chatDate.setTime(chatDate.getTime() - chatDate.getTimezoneOffset() * 60 * 1000);
-                      return chatDate.toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      });
-                    })()
-                  }
-                </td>
-                <td style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
-                  <div>
-                    <button onClick={(event) => handleContinue(chat._id, event)}>
-                      Continue
-                    </button>
-                  </div>
-                  <div>
-                    <button className={styles.deleteBtn} onClick={(event) => handleDelete(chat._id, event)}>
-                      <img src="/delete.svg" alt="" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {chatStore.chats.length > 0 && (
+          <div className={styles.tableContainer}>
+            <table>
+              <thead>
+                <tr>
+                  <th className={styles.firstCol}>Chat name</th>
+                  <th>Created At</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chatStore.chats.map((chat) => (
+                  <tr key={chat._id}>
+                    <td>{chat.message_name}</td>
+                    <td style={{ textAlign: "center" }}>
+                      {
+                        (() => {
+                          const chatDate = new Date(chat.created);
+                          chatDate.setTime(chatDate.getTime() - chatDate.getTimezoneOffset() * 60 * 1000);
+                          return chatDate.toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          });
+                        })()
+                      }
+                    </td>
+                    <td style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+                      <div>
+                        <button onClick={(event) => handleContinue(chat._id, event)}>
+                          Continue
+                        </button>
+                      </div>
+                      <div>
+                        <button className={styles.deleteBtn} onClick={(event) => handleDelete(chat._id, event)}>
+                          <img src="/delete.svg" alt="" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
