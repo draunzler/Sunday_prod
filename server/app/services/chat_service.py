@@ -22,18 +22,18 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 client = OpenAI(
-  organization = os.getenv('ORGANISATION_ID'),
-  project = os.getenv('PROJECT_ID'),
+    organization=os.getenv('ORGANISATION_ID'),
+    project=os.getenv('PROJECT_ID'),
 )
 
 # Initialize OpenAI API
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 genai_api_key = os.getenv("GOOGLE_API_KEY")
-genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+genai.configure(api_key=genai_api_key)
 google_llm = ChatGoogleGenerativeAI(
-    api_key=genai_api_key, model="gemini-1.5-flash",
+    api_key=genai_api_key,
+    model="gemini-1.5-flash",
     safety_settings={
         HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_NONE,
         HarmCategory.HARM_CATEGORY_DEROGATORY: HarmBlockThreshold.BLOCK_NONE,
@@ -49,7 +49,7 @@ google_llm = ChatGoogleGenerativeAI(
     }
 )
 
-prompt = PromptTemplate(
+prompt_template = PromptTemplate(
     input_variables=["history", "input"],
     template=(
         "You are an AI assistant named Sunday, designed to be helpful, creative, and clever. "
@@ -58,10 +58,11 @@ prompt = PromptTemplate(
         "When responding, always keep the following guidelines in mind:\n"
         "1. Clarity: Provide clear and concise information.\n"
         "2. Creativity: Offer innovative suggestions and solutions.\n"
+        "3. Engagement: Always respond to the user and avoid leaving them without an answer.\n\n"
         "Use the conversation history below to understand the context and flow of the conversation.\n\n"
         "{history}\n\n"
         "User: {input}\n"
-        "Your response:"
+        "Your response (make sure to provide an answer):"
     )
 )
 
@@ -69,7 +70,7 @@ memory = ConversationBufferMemory(memory_key="history")
 
 llm_chain = LLMChain(
     llm=google_llm,
-    prompt=prompt,
+    prompt=prompt_template,
     memory=memory
 )
 
@@ -87,6 +88,7 @@ async def generate_response(prompt_request, messages_collection):
         logger.debug(f"Received prompt: {prompt}")
         logger.debug(f"User ID: {user_id}, Message ID: {message_id}, Page: {page}, Limit: {limit}")
 
+        # Get previous messages from the database
         if not message_id:
             memory_context = []
         else:
@@ -98,9 +100,13 @@ async def generate_response(prompt_request, messages_collection):
                 # Get only the last `context_limit` messages for context in memory
                 memory_context = message_doc["messages"][-context_limit:]
 
+        # Create a formatted history string
         history = "\n".join([f"User: {m['prompt']}\nBot: {m['response']}" for m in memory_context])
         full_input = f"{history}\nUser: {prompt}"
 
+        logger.debug(f"Full input for LLM: {full_input}")
+
+        # Generate a response using the LLM chain
         response = llm_chain.predict(input=full_input)
         logger.info(f"Generated response: {response}")
 
@@ -114,8 +120,8 @@ async def generate_response(prompt_request, messages_collection):
         memory_context.append(new_interaction)
         memory_context = memory_context[-context_limit:]  # Keep only last `context_limit` for context
 
+        # Update the database with the new interaction
         if message_id:
-            # Append the new interaction to the entire message history in the DB, not just memory context
             update_data = {
                 "$push": {
                     "messages": new_interaction  # Append the new message to the DB
@@ -132,7 +138,7 @@ async def generate_response(prompt_request, messages_collection):
                 return JSONResponse({"error": "Message not found or not updated"}, status_code=404)
 
         # Clear memory context after use
-        memory_context = []
+        memory.clear()
         logger.debug("Memory context cleared.")
 
         return {
@@ -145,12 +151,12 @@ async def generate_response(prompt_request, messages_collection):
     except Exception as e:
         logger.error(f"Error generating response: {e}")
         raise HTTPException(status_code=500, detail="Something went wrong")
-    
-async def forget_memory():
-  try:
-    memory.clear()
 
-    return {"message": "Memory cleared successfully"}
-  except Exception as e:
-    logger.error(f"Error clearing memory: {e}")
-    raise HTTPException(status_code=500, detail="Something went wrong")
+async def forget_memory():
+    try:
+        memory.clear()
+        logger.info("Memory cleared successfully.")
+        return {"message": "Memory cleared successfully"}
+    except Exception as e:
+        logger.error(f"Error clearing memory: {e}")
+        raise HTTPException(status_code=500, detail="Something went wrong")
