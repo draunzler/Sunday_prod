@@ -2,20 +2,16 @@
 from bson import ObjectId
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from typing import Optional
-from fastapi.encoders import jsonable_encoder
-from pymongo import MongoClient
 from datetime import datetime
 
 from dotenv import load_dotenv
 from openai import OpenAI
-from fastapi.encoders import jsonable_encoder
 import google.generativeai as genai
 import openai
 import os
 import logging
 from langchain.chains import LLMChain
-from langchain_google_genai import GoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI, HarmBlockThreshold, HarmCategory
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 
@@ -36,7 +32,22 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 genai_api_key = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-google_llm = GoogleGenerativeAI(api_key=genai_api_key, model="gemini-1.5-flash")
+google_llm = ChatGoogleGenerativeAI(
+    api_key=genai_api_key, model="gemini-1.5-flash",
+    safety_settings={
+        HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DEROGATORY: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_TOXICITY: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_VIOLENCE: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUAL: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_MEDICAL: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    }
+)
 
 prompt = PromptTemplate(
     input_variables=["history", "input"],

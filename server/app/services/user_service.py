@@ -77,7 +77,6 @@ async def get_user(user_id):
                 "created": msg.get("created_at", "")
             })
 
-        # Create the response without the password, adding messages
         user_response = {
             "_id": str(user["_id"]),
             "name": user["name"],
