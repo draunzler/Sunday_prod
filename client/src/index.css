@@ -5,6 +5,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-color: #88888880 transparent;
 }
 body{
   background: #121212;
