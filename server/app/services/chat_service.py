@@ -3,7 +3,6 @@ from bson import ObjectId
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from datetime import datetime
-
 from dotenv import load_dotenv
 from openai import OpenAI
 import google.generativeai as genai
@@ -76,6 +75,28 @@ llm_chain = LLMChain(
 
 logger.info("chat_service.py is being executed")
 
+async def generate_chat_name(prompt, max_length=15):
+    prompt_template_for_name = PromptTemplate(
+        input_variables=["input", "max_length"],
+        template=(
+            "Generate 1 short, name for a chat under {max_length} characters based on the input below. DO NOT SUGGEST OPTIONS\n\n "
+            "User Input: {input}\n\n"
+            "Short, creative chat name:"
+        )
+    )
+
+    # Use the template to ensure the model generates a shorter name
+    name_chain = LLMChain(
+        llm=google_llm,
+        prompt=prompt_template_for_name
+    )
+
+    # Generate chat name
+    chat_name = name_chain.predict(input=prompt, max_length=max_length)
+    
+    return chat_name
+
+
 async def generate_response(prompt_request, messages_collection):
     try:
         prompt = prompt_request.prompt
@@ -97,7 +118,6 @@ async def generate_response(prompt_request, messages_collection):
                 memory_context = []
             else:
                 total_messages = len(message_doc["messages"])
-                # Get only the last `context_limit` messages for context in memory
                 memory_context = message_doc["messages"][-context_limit:]
 
         # Create a formatted history string
@@ -137,7 +157,14 @@ async def generate_response(prompt_request, messages_collection):
             if result.modified_count == 0:
                 return JSONResponse({"error": "Message not found or not updated"}, status_code=404)
 
-        # Clear memory context after use
+            if total_messages == 0:
+                chat_name = await generate_chat_name(prompt, 15)
+                messages_collection.update_one(
+                    {"_id": ObjectId(message_id), "user_id": user_id},
+                    {"$set": {"message_name": chat_name}}
+                )
+                logger.debug(f"Generated chat name: {chat_name}")
+
         memory.clear()
         logger.debug("Memory context cleared.")
 
