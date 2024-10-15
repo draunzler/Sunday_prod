@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import chatStore from '../stores/ChatStore';
 import { observer } from 'mobx-react-lite';
 import { IChat } from '../interfaces/IChat';
@@ -8,8 +8,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import styles from "../styles/chatRoom.module.scss";
 import Sidebar from './Sidebar';
-import Modal from './Modal';
-import CreateChat from './CreateChat';
 
 const customStyle = {
   ...materialDark,
@@ -35,9 +33,9 @@ const ChatRoom: React.FC = observer(() => {
   const rowHeight = 24;
   const limit = 10;
   const userId = localStorage.getItem('user_id');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchChatMessages = async () => {
@@ -144,6 +142,19 @@ const ChatRoom: React.FC = observer(() => {
     }
   };
 
+  const handleCreate = async () => {
+    try {
+        const response = await chatStore.createChat(userId!, '');
+        if (response.message === "Message created successfully") {
+            navigate(`/chat/${response.message_id}`);
+        } else {
+            alert(response.message);
+        }
+    } catch (error: any) {
+        alert(error);
+    }
+  };
+
   const handleTextareaResize = () => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -159,12 +170,9 @@ const ChatRoom: React.FC = observer(() => {
   return (
     <div className={styles.outermostContainer}>
       <Sidebar isCollapsed={isSidebarCollapsed} />
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <CreateChat isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      </Modal>
       <div className={styles.chatRoomContainer}>
         <div className={styles.chatName}>
-          <button onClick={() => setIsModalOpen(true)}>Create New Chat</button>
+          <button onClick={handleCreate}>Create New Chat</button>
         </div>
         <div 
           className={styles.chatContainer} 

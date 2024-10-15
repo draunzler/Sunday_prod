@@ -25,6 +25,8 @@
     }
     .menuList {
         padding: 1rem;
+        max-height: calc(100% - 6rem);
+        overflow-y: auto;
         .chatItem {
           button {
             padding-left: 1rem;

@@ -3,15 +3,12 @@ import { observer } from 'mobx-react-lite';
 import chatStore from '../stores/ChatStore';
 import userStore from '../stores/UserStore';
 import { useNavigate } from 'react-router-dom';
-import CreateChat from './CreateChat';
-import Modal from './Modal';
 import styles from "../styles/chatDashboard.module.scss";
 
 const ChatDashboard: React.FC = observer(() => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('user_id');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -70,6 +67,19 @@ const ChatDashboard: React.FC = observer(() => {
     }
   };
 
+  const handleCreate = async () => {
+    try {
+        const response = await chatStore.createChat(userId!, '');
+        if (response.message === "Message created successfully") {
+            navigate(`/chat/${response.message_id}`);
+        } else {
+            alert(response.message);
+        }
+    } catch (error: any) {
+        alert(error);
+    }
+  };
+
   const handleLogout = () => {
     userStore.logout();
     navigate('/login');
@@ -115,12 +125,9 @@ const ChatDashboard: React.FC = observer(() => {
         <div className={styles.createBtn}>
           <div className={styles.createBtnContainer}>
             <span style={{fontSize: "3.5rem", fontWeight: 100}}>+</span>
-            <button onClick={() => setIsModalOpen(true)}>Create New Chat</button>
+            <button onClick={handleCreate}>Create New Chat</button>
           </div>
         </div>
-        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <CreateChat isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-        </Modal>
         {chatStore.chats.length > 0 && (
           <div className={styles.tableContainer}>
             <table>
