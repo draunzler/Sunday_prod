@@ -90,6 +90,13 @@
                     width: auto;
                 }
             }
+            .actionsCol{
+                width: 15rem;
+                padding-left: 1rem;
+                @media screen and (max-width: 700px) {
+                    width: auto;
+                }
+            }
             .deleteBtn{
                 background: #d20a2e;
                 width: 43.8px;

@@ -10,12 +10,16 @@ const ChatDashboard: React.FC = observer(() => {
   const userId = localStorage.getItem('user_id');
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatStore.loadChats(userId!);
     userStore.loadDetails(userId!);
+    window.addEventListener('resize', () => {
+      setWindowWidth(window.innerWidth);
+    });
   }, []);
 
   useEffect(() => {
@@ -134,8 +138,11 @@ const ChatDashboard: React.FC = observer(() => {
               <thead>
                 <tr>
                   <th className={styles.firstCol}>Chat name</th>
-                  <th>Created At</th>
-                  <th>Action</th>
+                  <th style={{minWidth: windowWidth < 700 ? "10rem" : "auto"}}>Created At</th>
+                  {windowWidth > 1200 && (
+                    <th>Latest Prompt</th>
+                  )}
+                  <th className={styles.actionsCol}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -158,6 +165,14 @@ const ChatDashboard: React.FC = observer(() => {
                         })()
                       }
                     </td>
+                    {windowWidth > 1200 && (
+                      <td style={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: "200px"
+                      }} title={chat.latest_prompt}>{chat.latest_prompt}</td>
+                    )}
                     <td style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
                       <div>
                         <button onClick={(event) => handleContinue(chat._id, event)}>

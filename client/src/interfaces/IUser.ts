@@ -10,4 +10,5 @@ export interface IMessage{
     _id: string;
     message_name: string;
     created: string;
+    latest_prompt: string;
 }
