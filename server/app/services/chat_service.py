@@ -28,7 +28,7 @@ client = OpenAI(
 # Initialize OpenAI API
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-genai_api_key = os.getenv("GOOGLE_API_KEY")
+genai_api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=genai_api_key)
 google_llm = ChatGoogleGenerativeAI(
     api_key=genai_api_key,
