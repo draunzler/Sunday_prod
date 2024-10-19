@@ -28,14 +28,12 @@ messages_collection = db["messages"]
 
 async def create_user(user_data):
     try:
-        # Hash the password
         hashed_password = bcrypt.hashpw(user_data["password"].encode('utf-8'), bcrypt.gensalt())
         user_data["password"] = hashed_password.decode('utf-8')  # Store the hashed password
         
         user = User(**user_data)
         user_data = user.dict()
 
-        # Insert user into MongoDB
         inserted_id = users_collection.insert_one(user_data).inserted_id
 
         return JSONResponse({"message": "User created successfully", "user_id": str(inserted_id)})
@@ -67,15 +65,12 @@ async def get_user(user_id):
         if not user:
             return JSONResponse({"error": "User not found"}, status_code=404)
 
-        # Find all messages related to the user
         user_messages = messages_collection.find({"user_id": user_id})
 
         messages_list = []
         for msg in user_messages:
-            # Assuming 'messages' is a list containing multiple prompts/responses
             message_history = msg.get("messages", [])
             if message_history:
-                # Get the latest message (assuming it's the last item in the list)
                 latest_message = message_history[-1]
                 latest_prompt = latest_message.get("prompt", "")
             else:
@@ -83,9 +78,9 @@ async def get_user(user_id):
 
             messages_list.append({
                 "_id": str(msg["_id"]),
-                "message_name": msg.get("name", ""),  # Assuming 'name' stores message_name
+                "message_name": msg.get("message_name", ""),
                 "created": msg.get("created_at", ""),
-                "latest_prompt": latest_prompt  # Add the latest prompt text
+                "latest_prompt": latest_prompt
             })
 
         user_response = {
