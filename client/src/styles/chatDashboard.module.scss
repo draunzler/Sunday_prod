@@ -2,7 +2,7 @@
     header{
         display: flex;
         justify-content: space-between;
-        padding: 2rem;
+        padding: 1.2255rem 2rem;
         padding-bottom: 0;
         width: 100%;
         background: #121212;
@@ -11,6 +11,7 @@
         .logo{
             display: flex;
             gap: 0.5rem;
+            align-items: center;
             cursor: pointer;
             img {
                 height: 30px;

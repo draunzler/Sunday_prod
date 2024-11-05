@@ -120,7 +120,7 @@ const ChatDashboard: React.FC = observer(() => {
         <header>
           <div className={styles.logo} onClick={() => navigate('/')}>
             <img src="/sunday_dark.svg" alt="" />
-            <h2>Sunday</h2>
+            <h3>Sunday</h3>
           </div>
           <div style={{ position: "relative" }}>
             <img
