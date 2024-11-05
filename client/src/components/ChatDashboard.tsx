@@ -14,6 +14,31 @@ const ChatDashboard: React.FC = observer(() => {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5; // Customize this to the number of rows per page you want
+
+  // Calculate total pages
+  const totalPages = Math.ceil(chatStore.chats.length / rowsPerPage);
+
+  // Event handlers for pagination
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  // Slicing chats array to get the data for the current page
+  const paginatedChats = chatStore.chats
+  .slice()
+  .reverse()
+  .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
   useEffect(() => {
     chatStore.loadChats(userId!);
     userStore.loadDetails(userId!);
@@ -93,7 +118,10 @@ const ChatDashboard: React.FC = observer(() => {
     <div className={styles.dashboardContainer}>
       <div className={isSidebarCollapsed ? styles.contentCollapsed : styles.content}>
         <header>
-          <h2>Welcome, {userStore.user?.name} </h2>
+          <div className={styles.logo} onClick={() => navigate('/')}>
+            <img src="/sunday_dark.svg" alt="" />
+            <h2>Sunday</h2>
+          </div>
           <div style={{ position: "relative" }}>
             <img
               src="https://via.placeholder.com/40"
@@ -138,57 +166,73 @@ const ChatDashboard: React.FC = observer(() => {
               <thead>
                 <tr>
                   <th className={styles.firstCol}>Chat name</th>
-                  <th style={{minWidth: windowWidth < 700 ? "10rem" : "auto"}}>Created At</th>
-                  {windowWidth > 1200 && (
-                    <th>Latest Prompt</th>
-                  )}
-                  <th className={styles.actionsCol}>Action</th>
+                  <th style={{ minWidth: windowWidth < 700 ? '10rem' : 'auto' }}>Created At</th>
+                  {windowWidth > 1200 && <th>Latest Prompt</th>}
+                  <th className={styles.actionsCol}></th>
                 </tr>
               </thead>
               <tbody>
-                {chatStore.chats.map((chat) => (
-                  <tr key={chat._id}>
+                {paginatedChats.map((chat) => (
+                  <tr 
+                    key={chat._id} 
+                    onClick={(event) => handleContinue(chat._id, event)} 
+                    style={{ cursor: 'pointer' }}
+                    className={styles.chatRow}
+                  >
                     <td>{chat.message_name}</td>
-                    <td style={{ textAlign: "center" }}>
-                      {
-                        (() => {
-                          const chatDate = new Date(chat.created);
-                          chatDate.setTime(chatDate.getTime() - chatDate.getTimezoneOffset() * 60 * 1000);
-                          return chatDate.toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                          });
-                        })()
-                      }
+                    <td style={{ textAlign: 'center' }}>
+                      {(() => {
+                        const chatDate = new Date(chat.created);
+                        chatDate.setTime(chatDate.getTime() - chatDate.getTimezoneOffset() * 60 * 1000);
+                        return chatDate.toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false,
+                        });
+                      })()}
                     </td>
                     {windowWidth > 1200 && (
-                      <td style={{
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        maxWidth: "200px"
-                      }} title={chat.latest_prompt}>{chat.latest_prompt}</td>
+                      <td
+                        style={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: '200px',
+                        }}
+                        title={chat.latest_prompt}
+                      >
+                        {chat.latest_prompt}
+                      </td>
                     )}
-                    <td style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
-                      <div>
-                        <button onClick={(event) => handleContinue(chat._id, event)}>
-                          Continue
-                        </button>
-                      </div>
-                      <div>
-                        <button className={styles.deleteBtn} onClick={(event) => handleDelete(chat._id, event)}>
-                          <img src="/delete.svg" alt="" />
-                        </button>
-                      </div>
+                    <td className={styles.actionsCol}>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDelete(chat._id, event);
+                        }}
+                      >
+                        <img src="/delete.svg" alt="Delete" />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <div className={styles.paginationControls}>
+              <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+                ◄
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                ►
+              </button>
+            </div>
           </div>
         )}
       </div>

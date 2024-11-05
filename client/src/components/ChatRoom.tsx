@@ -36,6 +36,7 @@ const ChatRoom: React.FC = observer(() => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const navigate = useNavigate();
+  // const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchChatMessages = async () => {
@@ -122,10 +123,43 @@ const ChatRoom: React.FC = observer(() => {
   const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : '';
+    const [isCopied, setIsCopied] = useState(false);
+  
+    const handleCopyCode = () => {
+      navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
+      setIsCopied(true);
+  
+      // Reset the copied state after 3 seconds
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 3000);
+    };
   
     return !inline && match ? (
       <div>
-        <div style={{ padding: "0.5rem 0", paddingLeft: '1rem', background: '#2f2f2f', color: '#d9d9d980' }}>{language}</div>
+        <div
+          style={{
+            padding: "0.5rem 1rem",
+            display: "flex",
+            justifyContent: "space-between",
+            background: '#2f2f2f',
+            color: '#d9d9d980'
+          }}
+        >
+          {language}
+          <button onClick={handleCopyCode}>
+            {isCopied ? (
+              <>
+              Copied!
+              <span style={{ color: '#d9d9d9' }}>✔</span>
+              </>
+            ) : (
+              <>
+              Copy code <img src="/copy.svg" alt="" />
+              </>
+            )}
+          </button>
+        </div>
         <SyntaxHighlighter style={customStyle} language={language} PreTag="div" {...props}>
           {String(children).replace(/\n$/, '')}
         </SyntaxHighlighter>
@@ -166,6 +200,19 @@ const ChatRoom: React.FC = observer(() => {
 
     textarea.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
   };
+
+  // const handleFileUpload = () => {
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.click();
+  //   }
+  // };
+
+  // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     // ... (Code to send the file to your backend)
+  //   }
+  // };
 
   return (
     <div className={styles.outermostContainer}>
@@ -216,6 +263,10 @@ const ChatRoom: React.FC = observer(() => {
           <>Generating...</>
         )}
         <form onSubmit={handleSendPrompt} className={styles.formContainer}>
+          {/* <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} /> 
+          <button className={styles.attachbtn} onClick={handleFileUpload}>
+            <img src="/attachment.svg" alt="" />
+          </button> */}
           <textarea
             ref={textareaRef}
             style={{ flex: 1 }}
